@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{maintenance.title}">Maintenance Reminder</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .email-container {
+        width: 100%;
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        padding: 20px;
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+      }
+      .header img {
+        max-width: 150px;
+      }
+      .content {
+        line-height: 1.6;
+        color: #333333;
+      }
+      .content h2 {
+        color: #2e6da4;
+      }
+      .details {
+        margin-top: 20px;
+      }
+      .details table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .details th, .details td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid #dddddd;
+      }
+      .footer {
+        text-align: center;
+        padding-top: 20px;
+        font-size: 12px;
+        color: #777777;
+      }
+      .button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-top: 20px;
+        background-color: #2e6da4;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+      @media only screen and (max-width: 600px) {
+        .email-container {
+          padding: 10px;
+        }
+        .header img {
+          max-width: 100px;
+        }
+      }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <!-- Header -->
+    <div class="header">
+        <img src="https://res.cloudinary.com/dsboloq8v/image/upload/v1742473811/logo_hwruel.png" alt="Lab Management HCMIU">
+
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <h2 th:text="#{maintenance.title}">Maintenance Reminder</h2>
+        <p th:utext="#{maintenance.greeting(${username})}"></p>
+        <p th:utext="#{maintenance.message}"></p>
+
+        <div class="details">
+            <table>
+                <tr>
+                    <th th:text="#{maintenance.assetId}">Asset ID:</th>
+                    <td th:text="${assetId}"></td>
+                </tr>
+                <tr>
+                    <th th:text="#{maintenance.assetName}">Asset Name:</th>
+                    <td th:text="${assetName}"></td>
+                </tr>
+                <tr>
+                    <th th:text="#{maintenance.scheduledDate}">Scheduled Date:</th>
+                    <td th:text="${scheduledDate}"></td>
+                </tr>
+                <tr>
+                    <th th:text="#{maintenance.remarks}">Remarks:</th>
+                    <td th:text="${remarks}"></td>
+                </tr>
+            </table>
+        </div>
+
+        <p th:utext="#{maintenance.action}"></p>
+
+        <a href="https://yourcompany.com/support" class="button" th:text="#{maintenance.button}">Contact Support</a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p th:utext="#{maintenance.footer.copyright}"></p>
+        <p th:utext="#{maintenance.footer.contact}"><a href="https://yourcompany.com/unsubscribe" th:text="#{maintenance.footer.unsubscribe}"></a></p>
+    </div>
+</div>
+</body>
+</html>

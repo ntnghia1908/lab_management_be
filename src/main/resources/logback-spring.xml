@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+  <!-- Appender cho console -->
+  <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{dd/MM/yyyy HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Appender cho file -->
+  <appender name="file" class="ch.qos.logback.core.FileAppender">
+    <file>/logs/spring-boot-app.log</file>
+    <append>true</append>
+    <encoder>
+      <pattern>%d{dd/MM/yyyy HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Root logger -->
+  <root level="info">
+    <appender-ref ref="console" />
+    <appender-ref ref="file" />
+    <!-- <appender-ref ref="logstash" /> --> <!-- Giữ comment nếu không gửi trực tiếp tới Logstash -->
+  </root>
+</configuration>
