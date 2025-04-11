@@ -24,10 +24,7 @@ import java.util.UUID;
 public class LabManagementApplication {
 
 	public static void main(String[] args) {
-		Dotenv dotenv = Dotenv.load();
-		System.setProperty("JWT_SECRET_KEY", dotenv.get("JWT_SECRET_KEY"));
 		SpringApplication.run(LabManagementApplication.class, args);
 	}
-
 
 }

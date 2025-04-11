@@ -5,15 +5,26 @@ services:
     ports:
       - "3308:3306"
     environment:
-      MYSQL_USER: "sang"
-      MYSQL_PASSWORD: "0966420942"
       MYSQL_ROOT_PASSWORD: "0966420942"
       MYSQL_DATABASE: lab_management
+      TZ: Asia/Ho_Chi_Minh
     volumes:
+      - ./data:/docker-entrypoint-initdb.d
       - mysql_data:/var/lib/mysql
     networks:
       - lab-management-network
     restart: unless-stopped
+    command: >
+      --character-set-server=utf8mb4 
+      --collation-server=utf8mb4_unicode_ci 
+      --default-authentication-plugin=mysql_native_password
+      --init-file=/docker-entrypoint-initdb.d/data.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p0966420942"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   mail-dev:
     image: maildev/maildev
@@ -98,6 +109,9 @@ services:
       - springboot-logs:/logs
     ports:
       - "8080:8080"
+    environment:
+      - JWT_SECRET_KEY=7Zsxk9MyF3nQ8wL5tB1jH6cR0sA3dV4pE2gW8rK5mN7vX9qP4zT6bY3uJ2hC9
+      - SPRING_PROFILES_ACTIVE=dev
     networks:
       - lab-management-network
     depends_on:

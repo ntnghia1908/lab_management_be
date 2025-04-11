@@ -4,6 +4,7 @@ WORKDIR /build
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src ./src
+COPY .env .
 RUN mvn clean package -DskipTests
 
 # Runtime state
@@ -14,6 +15,7 @@ ARG APP_VERSION=0.0.1-SNAPSHOT
 
 WORKDIR /app
 COPY --from=build /build/target/LabManagement-*.jar /app/
+COPY --from=build /build/.env /app/
 
 EXPOSE 8088
 
@@ -23,5 +25,10 @@ ENV JAR_VERSION=${APP_VERSION}
 ENV EMAIL_HOSTNAME=smtp.gmail.com
 ENV EMAIL_USERNAME=testdev01112002@gmail.com
 ENV EMAIL_PASSWORD=sgxklrzfsgeklpyd
+ENV JWT_SECRET_KEY=7Zsxk9MyF3nQ8wL5tB1jH6cR0sA3dV4pE2gW8rK5mN7vX9qP4zT6bY3uJ2hC9
 
-CMD java -jar -Dspring.profiles.active=${ACTIVE_PROFILE} -Dspring.datasource.url=${DB_URL} LabManagement-${JAR_VERSION}.jar
+CMD java -jar \
+    -Dspring.profiles.active=${ACTIVE_PROFILE} \
+    -Dspring.datasource.url=${DB_URL} \
+    -Dapplication.security.jwt.secret-key=${JWT_SECRET_KEY} \
+    LabManagement-${JAR_VERSION}.jar

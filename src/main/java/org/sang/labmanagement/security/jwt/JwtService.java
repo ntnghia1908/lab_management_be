@@ -28,16 +28,24 @@ public class JwtService {
 	@Value("${application.security.jwt.expiration}")
 	private long jwtExpiration;
 
-	@Value("${application.security.jwt.secret-key}")
-	private String secretKey;
-
 	@Value("${application.security.jwt.refresh-token.expiration}")
 	private long refreshExpiration;
 
-//	@PostConstruct
-//	public void init() {
-//		System.out.println("JWT Secret Key: " + secretKey);
-//	}
+	@Value("${application.security.jwt.secret-key}")
+	private String secretKey;
+
+	private SecretKey signingKey;
+
+	@PostConstruct
+	public void init() {
+		try {
+			byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+			signingKey = Keys.hmacShaKeyFor(keyBytes);
+		} catch (Exception e) {
+			// If there's any issue with the provided key, generate a new one
+			signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+		}
+	}
 
 	public String generateToken(UserDetails userDetails) {
 		return generateToken(new HashMap<>(), userDetails);
@@ -46,41 +54,36 @@ public class JwtService {
 	public String generateToken(Map<String, Object> claims, UserDetails userDetails) {
 		return buildToken(claims, userDetails, jwtExpiration);
 	}
-	public String generateRefreshToken(
-			UserDetails userDetails
-	) {
-		String refreshToken=buildToken(new HashMap<>(), userDetails, refreshExpiration);
-		tokenService.saveRefreshToken(userDetails.getUsername(),refreshToken);
 
+	public String generateRefreshToken(UserDetails userDetails) {
+		String refreshToken = buildToken(new HashMap<>(), userDetails, refreshExpiration);
+		tokenService.saveRefreshToken(userDetails.getUsername(), refreshToken);
 		return refreshToken;
 	}
 
-	private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long jwtExpiration) {
-		var authorities=userDetails.getAuthorities();
+	private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
+		var authorities = userDetails.getAuthorities();
 		return Jwts
 				.builder()
 				.setClaims(extraClaims)
 				.setSubject(userDetails.getUsername())
 				.setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+				.setExpiration(new Date(System.currentTimeMillis() + expiration))
 				.claim("authorities", authorities)
-				.signWith(getSignInKey(), SignatureAlgorithm.HS256)
+				.signWith(signingKey, SignatureAlgorithm.HS256)
 				.compact();
 	}
+
 	public boolean isTokenValid(String token, UserDetails userDetails) {
 		final String username = extractUsername(token);
-
-
 		if (tokenService.getBlackListAccess(token) || tokenService.getBlackListRefresh(token)) {
-			return false; // Token đã bị thu hồi
+			return false;
 		}
-
 		return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
 	}
 
-
 	private boolean isTokenExpired(String token) {
-		return extractExpiration(token).before(new Date());//so sánh thời gian hết hạn với thời gian hiện tại
+		return extractExpiration(token).before(new Date());
 	}
 
 	private Date extractExpiration(String token) {
@@ -99,15 +102,9 @@ public class JwtService {
 	private Claims extractAllClaims(String token) {
 		return Jwts
 				.parserBuilder()
-				.setSigningKey(getSignInKey())
+				.setSigningKey(signingKey)
 				.build()
 				.parseClaimsJws(token)
 				.getBody();
-	}
-
-
-	private Key getSignInKey() {
-		byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-		return Keys.hmacShaKeyFor(keyBytes);
 	}
 }
