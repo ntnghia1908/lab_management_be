@@ -7,25 +7,29 @@ COPY src ./src
 COPY .env .
 RUN mvn clean package -DskipTests
 
-# Runtime state
+# Runtime stage
 FROM amazoncorretto:17
-ARG PROFILE=prod
-ARG APP_VERSION=0.0.1-SNAPSHOT
-#Define new things
+
+# Load environment variables from .env file
+ARG PROFILE
+ARG APP_VERSION
+ENV PROFILE=${PROFILE:-prod}
+ENV APP_VERSION=${APP_VERSION:-0.0.1-SNAPSHOT}
 
 WORKDIR /app
 COPY --from=build /build/target/LabManagement-*.jar /app/
 COPY --from=build /build/.env /app/
 
-EXPOSE 8088
+EXPOSE ${SPRINGBOOT_CONTAINER_PORT}
 
-ENV DB_URL=jdbc:mysql://mysql-lab:3306/lab_management
+# Load environment variables from .env file
+ENV DB_URL=${DB_URL}
 ENV ACTIVE_PROFILE=${PROFILE}
 ENV JAR_VERSION=${APP_VERSION}
-ENV EMAIL_HOSTNAME=smtp.gmail.com
-ENV EMAIL_USERNAME=testdev01112002@gmail.com
-ENV EMAIL_PASSWORD=sgxklrzfsgeklpyd
-ENV JWT_SECRET_KEY=7Zsxk9MyF3nQ8wL5tB1jH6cR0sA3dV4pE2gW8rK5mN7vX9qP4zT6bY3uJ2hC9
+ENV EMAIL_HOSTNAME=${EMAIL_HOSTNAME}
+ENV EMAIL_USERNAME=${EMAIL_USERNAME}
+ENV EMAIL_PASSWORD=${EMAIL_PASSWORD}
+ENV JWT_SECRET_KEY=${JWT_SECRET_KEY}
 
 CMD java -jar \
     -Dspring.profiles.active=${ACTIVE_PROFILE} \
