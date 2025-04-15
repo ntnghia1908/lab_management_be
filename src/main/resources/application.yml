@@ -6,4 +6,21 @@ spring:
       enabled: true            # Kích hoạt multipart
       max-file-size: 50MB       # Kích thước file tối đa cho phép
       max-request-size: 50MB    # Kích thước request tối đa
+  data:
+    redis:
+      repositories:
+        enabled: false
+      host: localhost
+      port: 6379
+      database: 0
+
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      expiration: 8640000 # a day
+      refresh-token:
+        expiration: 604800000 #7 days
+  cors:
+    origins: http://localhost:5173,http://192.168.100.106:5173,http://127.0.0.1:5173,http://localhost:3000
 

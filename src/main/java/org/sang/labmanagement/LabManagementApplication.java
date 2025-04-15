@@ -24,6 +24,12 @@ import java.util.UUID;
 public class LabManagementApplication {
 
 	public static void main(String[] args) {
+		// Load environment variables from .env file
+		Dotenv dotenv = Dotenv.configure().load();
+		
+		// Set system properties for Spring to use
+		dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
+		
 		SpringApplication.run(LabManagementApplication.class, args);
 	}
 

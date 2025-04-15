@@ -24,6 +24,7 @@ import org.sang.labmanagement.auth.response.AuthenticationResponse;
 import org.sang.labmanagement.user.UserRepository;
 import org.sang.labmanagement.utils.LogExecution;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -97,16 +98,26 @@ public class AuthController {
 
 	@Operation(summary = "Refresh authentication token", description = "Issues a new JWT token using refresh token")
 	@ApiResponses(value = {
-		@ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
+		@ApiResponse(responseCode = "200", description = "Token refreshed successfully",
+			content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
 		@ApiResponse(responseCode = "401", description = "Invalid refresh token")
 	})
 	@PostMapping("/refresh-token")
-	public void refreshToken(
+	public ResponseEntity<AuthenticationResponse> refreshToken(
 			HttpServletRequest request,
 			HttpServletResponse response
 	) throws IOException {
 		System.out.println("Refresh token endpoint accessed");
-		authService.refreshToken(request, response);
+		try {
+			return ResponseEntity.ok(authService.refreshToken(request, response));
+		} catch (org.sang.labmanagement.exception.TokenException e) {
+			// Return a 401 with a more helpful error message but don't throw an exception
+			return ResponseEntity
+				.status(HttpStatus.UNAUTHORIZED)
+				.body(AuthenticationResponse.builder()
+					.message(e.getMessage())
+					.build());
+		}
 	}
 
 	@Operation(summary = "Request password reset", description = "Sends password reset email to user")

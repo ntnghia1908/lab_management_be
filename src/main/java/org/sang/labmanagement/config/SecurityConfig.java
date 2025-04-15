@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -30,6 +31,7 @@ public class SecurityConfig {
 	private final JwtFilter jwtFilter;
 	private final AuthenticationProvider authenticationProvider;
 	private final LogoutHandler logoutHandler;
+	private final CorsFilter corsFilter;
 
 	@Value("${application.cors.origins}")
 	private String corsOrigins;
@@ -43,6 +45,10 @@ public class SecurityConfig {
 				.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers("/api/v1/auth/**").permitAll()
+						.requestMatchers("/api/v1/lesson-time").permitAll() // Allow public access to lesson times
+						.requestMatchers("/api/v1/timetable/weeks-range").permitAll() // Allow public access to weeks range
+						.requestMatchers("/api/v1/timetable/by-week").permitAll() // Allow public access to timetable by week
+						.requestMatchers("/api/v1/timetable/course-details").permitAll() // Allow public access to course details
 						.requestMatchers("/ws/**", "/chat/**").permitAll()
 						.requestMatchers("/api/v1/admin/**").hasAnyRole("ADMIN","OWNER","CO_OWNER")
 						.requestMatchers("/teacher/**").hasRole("TEACHER")
@@ -51,6 +57,7 @@ public class SecurityConfig {
 						.anyRequest().permitAll()
 				)
 				.authenticationProvider(authenticationProvider)
+				.addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 				.logout(logout ->
 						logout.logoutUrl("/api/v1/auth/logout")
@@ -63,18 +70,19 @@ public class SecurityConfig {
 	private CorsConfigurationSource corsConfigurationSource() {
 		return request -> {
 			CorsConfiguration corsConfig = new CorsConfiguration();
-			List<String> allowedOrigins = Arrays.asList(corsOrigins.split(","));
-			corsConfig.setAllowedOrigins(allowedOrigins);
+			corsConfig.setAllowedOriginPatterns(List.of("*"));
 
 			corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-			corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type","Accept-Language"));
+			corsConfig.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept-Language", "Accept", 
+			                                     "Origin", "X-Requested-With", "Access-Control-Request-Method", 
+			                                     "Access-Control-Request-Headers"));
 
 			corsConfig.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
 
 			corsConfig.setAllowCredentials(true);
 
-			// CORS cache trong 1 giờ
+			// CORS cache for 1 hour
 			corsConfig.setMaxAge(3600L);
 			return corsConfig;
 		};

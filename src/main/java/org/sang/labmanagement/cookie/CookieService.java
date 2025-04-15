@@ -17,7 +17,7 @@ public class CookieService {
 
 	public void addCookie(HttpServletResponse response, String name, String value, Integer maxAge) {
 		int expiration = maxAge != null ? maxAge : (int) (name.equals("access_token") ? jwtExpiration : refreshExpiration);
-		String cookieValue = String.format("%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Strict", 
+		String cookieValue = String.format("%s=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=None; Secure", 
 			name, value, expiration);
 		response.addHeader("Set-Cookie", cookieValue);
 	}
@@ -35,7 +35,7 @@ public class CookieService {
 	}
 
 	public void deleteCookie(HttpServletResponse response, String name) {
-		String cookieValue = String.format("%s=; Path=/; Max-Age=0; HttpOnly; SameSite=Strict", name);
+		String cookieValue = String.format("%s=; Path=/; Max-Age=0; HttpOnly; SameSite=None; Secure", name);
 		response.addHeader("Set-Cookie", cookieValue);
 	}
 
